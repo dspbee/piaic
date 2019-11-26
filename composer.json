@@ -1,0 +1,39 @@
+{
+  "name": "dspbee/piaic",
+  "description": "Test infra",
+  "type": "library",
+  "keywords": [
+    "test"
+  ],
+  "homepage": "https://piaic.org/",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Igor Sorokin",
+      "email": "dspbee@gmail.com",
+      "role": "developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/dspbee/piaic/issues"
+  },
+  "require": {
+    "php": ">=7"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "7"
+  },
+  "autoload": {
+    "psr-4": {
+      "Piaic\\": "src/"
+    },
+    "classmap": [
+      "src/"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Piaic\\Test\\": "test/PiaicTest/"
+    }
+  }
+}
