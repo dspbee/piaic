@@ -1,12 +1,19 @@
 <?php
-namespace Piaic\Application;
+namespace Piaic\Main;
+
+use Piaic\Exception\PiaicException;
+use Piaic\Response\Response;
+use Piaic\Response\View;
 
 /**
  * Class Debug
- * @package Piaic\Application
+ * @package Piaic\Main
  */
 class Debug
 {
+    private static $debugEnabled = false;
+    private static $packageDirPath = '';
+
     /**
      * @return bool
      */
@@ -20,7 +27,7 @@ class Debug
      */
     public static function setPackageRoot(string $appDirPath)
     {
-        self::$packageDirPath = $appDirPath . 'package/Piaic';
+        self::$packageDirPath = $appDirPath . '/package/Piaic';
     }
 
     /**
@@ -98,11 +105,8 @@ class Debug
         $content = $view->getView('debug', $data, false);
 
         $response = new Response();
-        $response->setTextHtml($content, true);
+        $response->setContent($content, true);
         $response->echo();
         exit;
     }
-
-    private static $debugEnabled = false;
-    private static $packageDirPath = '';
 }

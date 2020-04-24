@@ -1,12 +1,19 @@
 <?php
-namespace Piaic\Application;
+namespace Piaic\Response;
+
+use Piaic\Exception\PiaicException;
 
 /**
  * Class View
- * @package Piaic\Application
+ * @package Piaic\Response
  */
 class View
 {
+    private $packageDirPath;
+    private $language;
+    private $route;
+    private $cache;
+
     /**
      * View constructor.
      * @param string $packageDirPath
@@ -30,17 +37,15 @@ class View
      */
     public function getView(string $name, array $data = [], $processLang = true): string
     {
-        $this->storagePathList = [];
-
-        if (!in_array($name, ['view', 'error', 'success', 'info'])) {
-            $name = 'view';
+        if (false !== strpos($name, '__')) {
+            $name = str_replace('__', '', $name);
             $viewPath = $this->packageDirPath . '/Route/' . $this->route . '/' . $name . '.html.php';
         } else {
             $viewPath = $this->packageDirPath . '/view/' . $name . '/view.html.php';
         }
 
         if ($this->cache) {
-            $pathToCachedView = $this->packageDirPath . '/view/_cache/' . str_replace(['/', '\\'], '_', $this->route) . '_' . $this->language . '.html.php';
+            $pathToCachedView = $this->packageDirPath . '/cache/' . str_replace(['/', '\\'], '_', $this->route) . '_' . $this->language . '.html.php';
             if (!file_exists($pathToCachedView)) {
                 $content = $this->combine($viewPath, true, true);
                 if ($processLang) {
@@ -80,15 +85,11 @@ class View
             }
             $content = preg_replace(['/\>[^\S ]+/s', '/[^\S ]+\</s', '/(\s)+/s'], ['>', '<', '\\1'], $content);
 
-            if (count($data)) {
-                $fh = tmpfile();
-                fwrite($fh, $content);
-                $content = self::renderTemplate(stream_get_meta_data($fh)['uri'], $data);
-                fclose($fh);
-                return $content;
-            } else {
-                return $content;
-            }
+            $fh = tmpfile();
+            fwrite($fh, $content);
+            $content = self::renderTemplate(stream_get_meta_data($fh)['uri'], $data);
+            fclose($fh);
+            return $content;
         }
 
         throw new PiaicException('Can\'t render template');
@@ -109,14 +110,6 @@ class View
             $content = ob_get_clean();
         } else {
             throw new PiaicException('Path not found: ' . $path);
-        }
-
-        $storagePath = explode('/', $path);
-        array_pop($storagePath);
-        $storagePath = implode('/', $storagePath) . '/' . $this->language . '.php';
-
-        if (file_exists($storagePath)) {
-            $this->storagePathList[] = $storagePath;
         }
 
         if ($processInclude) {
@@ -153,12 +146,10 @@ class View
     private function replaceLangFromStorage(string $content): string
     {
         $storage = [];
-        foreach ($this->storagePathList as $path) {
-            $temp = include $path;
-            foreach ($temp as $k => $v) {
-                if (!isset($storage[$k])) {
-                    $storage[$k] = $v;
-                }
+        $temp = include $this->packageDirPath . '/lang/' . $this->language . '.php';
+        foreach ($temp as $k => $v) {
+            if (!isset($storage[$k])) {
+                $storage[$k] = $v;
             }
         }
 
@@ -191,10 +182,4 @@ class View
         include $__file__;
         return ob_get_clean();
     }
-
-    private $packageDirPath;
-    private $language;
-    private $route;
-    private $cache;
-    private $storagePathList;
 }

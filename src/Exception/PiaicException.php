@@ -1,9 +1,9 @@
 <?php
-namespace Piaic\Application;
+namespace Piaic\Exception;
 
 /**
  * Class PiaicException
- * @package Piaic\Application
+ * @package Piaic\Exception
  */
 class PiaicException extends \Exception
 {

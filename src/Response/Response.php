@@ -1,9 +1,11 @@
 <?php
-namespace Piaic\Application;
+namespace Piaic\Response;
+
+use Piaic\Exception\PiaicException;
 
 /**
  * Class Response
- * @package Piaic\Application
+ * @package Piaic\Response
  */
 class Response
 {
@@ -20,7 +22,7 @@ class Response
      * @param string $content
      * @param bool $error
      */
-    public function setTextHtml(string $content, bool $error)
+    public function setContent(string $content, bool $error)
     {
         $this->notFound = false;
         $this->content = $content;
@@ -35,8 +37,28 @@ class Response
      */
     public function setJson(string $content, bool $error)
     {
-        $this->setTextHtml($content, $error);
+        $this->setContent($content, $error);
         header('Content-Type: application/json; charset=utf-8');
+    }
+
+    /**
+     * @param string $packageDirPath
+     * @param string $language
+     * @throws PiaicException
+     */
+    public function set404(string $packageDirPath, string $language)
+    {
+        http_response_code(404);
+        $this->content = '404 Not Found';
+        if (file_exists($packageDirPath . '/view/404/view.html.php')) {
+            $view = new View($packageDirPath, $language, '__404__', true);
+            $this->content = $view->getView('404', [], false);
+        }
+    }
+
+    public function isNotFound(): bool
+    {
+        return $this->notFound;
     }
 
     /**
@@ -64,7 +86,7 @@ class Response
      * @param string $url
      * @param int $statusCode
      */
-    public function redirect(string $url, int $statusCode)
+    public function redirect(string $url, int $statusCode = 303)
     {
         $this->notFound = false;
 
@@ -76,26 +98,6 @@ class Response
                 htmlspecialchars($url, ENT_QUOTES, 'UTF-8')
             );
         }
-    }
-
-    /**
-     * @param string $packageDirPath
-     * @param string $language
-     * @throws PiaicException
-     */
-    public function set404(string $packageDirPath, string $language)
-    {
-        http_response_code(404);
-        $this->content = '404 Not Found';
-        if (file_exists($packageDirPath . '/view/404/view.html.php')) {
-            $view = new View($packageDirPath, $language, '__404__', true);
-            $this->content = $view->getView('404', [], false);
-        }
-    }
-
-    public function isNotFound(): bool
-    {
-        return $this->notFound;
     }
 
     private $content;
